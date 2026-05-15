@@ -9,7 +9,7 @@ This combines POLYMOD data with NZ age-stratified population data to make a NZ-s
 
 Pre-requisites:
 * Install the R package [conmat](https://idem-lab.github.io/conmat/dev/index.html).
-* You ned a population data file `output/ERP_YYYY_base_ZZZZ.csv' which contains the NZ estimated resident population in year YYYY using census base ZZZZ, stratified by ethnicity and in 5-year age groups (see format below).
+* You ned a population data file `output/ERP_YYYY_base_ZZZZ.csv` which contains the NZ estimated resident population in year YYYY using census base ZZZZ, stratified by ethnicity and in 5-year age groups (see format below).
 * This file can be generated from raw population data (output from the IDI) by running the Matlab script `process_ERP2023_data.m` in the folder `code`. This processes the raw data `input_data/ERP counts 2019-2025_confidentialised.xlsx`.
 
 The `ERP...` data file needs to be a .csv file in the following format.
