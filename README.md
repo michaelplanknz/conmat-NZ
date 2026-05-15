@@ -13,14 +13,14 @@ Pre-requisites:
 * This file can be generated from raw population data (output from the IDI) by running the Matlab script `process_ERP2023_data.m` in the folder `code`. This processes the raw data `input_data/ERP counts 2019-2025_confidentialised.xlsx`.
 
 The `ERP...` data file needs to be a .csv file in the following format.
-|========|=========|=========|=========|=========|
+|--------|---------|---------|---------|---------|
 |age     |Other    |Maori    |Pacific  |Asian    |
-|========|=========|=========|=========|=========|
+|--------|---------|---------|---------|---------|
 |0-4     |         |         |         |         |
 |5-9     |         |         |         |         |
 |...     |         |         |         |         |
 |95+     |         |         |         |         |
-|========|=========|=========|=========|=========|
+|--------|---------|---------|---------|---------|
 
 To generate a contact matrix:
 * Run the R script `code/makeContractMatrix.R`.
