@@ -1,28 +1,29 @@
 clear
 close all
 
-% Script to read in the raw ERP data downloaded from Te Whatu Ora
-% populatiom web tool and save it as a wide-format table of population sizes by age
-% and ethnicity
-
+% Script to read in the raw ERP 2023 base data "ERP counts 2019-2025_confidentialised.xlsx" output from the IDI
+% And save it as a wide-format table of population sizes by age % and ethnicity
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Input/output settings
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-raw_data_folder = "../pop_data/";
-raw_data_fname = "t6_region_2025-12-17.csv";
+% Use ERP pop estimates for this year (all are from the 2023 census base)
+estYear = 2025;
+
+raw_data_folder = "../input_data/";
+raw_data_fname = "ERP counts 2019-2025_confidentialised.xlsx";
 
 output_folder = "../output/";
-output_fname = "ERP_2018_base.csv";
+output_fname = "ERP_" + estYear + "_base_2023.csv";
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Read data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 fIn = raw_data_folder + raw_data_fname;
-opts = detectImportOptions(fIn);
-opts = setvartype(opts, {'eth_mpao', 'agegrp'}, 'categorical');
+opts = detectImportOptions(fIn, 'Sheet', string(estYear));
+opts = setvartype(opts, {'Ethnicity', 'AgeGroup'}, 'categorical');
 raw = readtable(fIn, opts);
 
 
@@ -30,19 +31,16 @@ raw = readtable(fIn, opts);
 % Process data
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-% Omit the "AllAge" data
-keepFlag = raw.agegrp ~= "AllAge";
-raw = raw(keepFlag, :);
+% Replace "AgeGroup" with a field called "Age" formatted as "0-4", "5-9", etc.
+raw.age = categorical(replace(string(raw.AgeGroup), ",", "-"));
+raw = removevars(raw, 'AgeGroup');
 
-% Make a new variable called age and relace group labbl "<5" with "0-4"
-raw.age = raw.agegrp;
-raw.age(raw.age == "<5") = "0-4";
 
 % Specify ordering of age and ethnicity categories
-raw.eth_mpao = reordercats(raw.eth_mpao, ["Other", "Maori", "Pacific", "Asian"]);
+raw.Ethnicity = reordercats(raw.Ethnicity, ["Other", "Maori", "Pacific", "Asian"]);
 
 % Make a wide-format table
-tbl = unstack(raw, 'popcount', 'eth_mpao', 'groupingvariables', 'age');
+tbl = unstack(raw, 'N', 'Ethnicity', 'groupingvariables', 'age');
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Tests
@@ -50,16 +48,16 @@ tbl = unstack(raw, 'popcount', 'eth_mpao', 'groupingvariables', 'age');
 
 % One-way pop totals from raw data
 % Totals bu ethnicity
-tmp = groupsummary(raw, 'eth_mpao', "sum", "popcount");
-popByEth1 = tmp.sum_popcount;
+tmp = groupsummary(raw, 'Ethnicity', "sum", "N");
+popByEth1 = tmp.sum_N;
 
 % Totals by age
-tmp = groupsummary(raw, 'age', "sum", "popcount");
+tmp = groupsummary(raw, 'age', "sum", "N");
 
 % Need to sort this by age so make a string variable
 tmp.agestring = string(tmp.age);
 
-% Replace the "+" in "85+" with a "-" for consistency with other groups
+% Replace the "+" in "95+" with a "-" for consistency with other groups
 tmp.agestring = replace(tmp.agestring, "+", "-");
 
 % Create a numeric variable corresponding to the lower end of the age band
@@ -67,12 +65,12 @@ tmp.agenum = double(extractBefore(tmp.agestring, "-"));
 
 % Sort
 tmp = sortrows(tmp, 'agenum');
-popByAge1 = tmp.sum_popcount;
+popByAge1 = tmp.sum_N;
 
 
 % One-way pop totals from processed data
-popByEth2 = sum(table2array(tbl(:,2:end)))';
-popByAge2 = sum(table2array(tbl(:,2:end)), 2);
+popByEth2 = sum(table2array(tbl(:, 2:end)))';
+popByAge2 = sum(table2array(tbl(:, 2:end)), 2);
 
 
 % Check these are the same

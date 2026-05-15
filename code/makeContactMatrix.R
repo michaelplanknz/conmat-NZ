@@ -1,5 +1,9 @@
 # See https://idem-lab.github.io/conmat/dev/index.html
 
+# Reads processed population data from "../output/ERP_2025_base_2023.csv"
+# Saves contact matrix to "../output/NZ_conmat.csv"
+# In the output matrix, C_ij is the average number of contacts someone in group i has with people in group j
+
 library(conmat)
 library(readr)
 library(dplyr)
@@ -16,7 +20,7 @@ contact_model <- fit_single_contact_model(
 )
 
 # Get NZ pop data
-pop_dat_nz <- read_csv("../output/ERP_2018_base.csv")
+pop_dat_nz <- read_csv("../output/ERP_2025_base_2023.csv")
 
 # Sum over ethnicities
 pop_dat_nz <- pop_dat_nz %>%
@@ -25,11 +29,11 @@ pop_dat_nz <- pop_dat_nz %>%
 # Get a data frame that is in the correct format for conmat
 pop_dat = age_population(data = pop_dat_nz, location_col = NULL, location = NULL, age)
 
-# Run the synethic contact matrix model
+# Run the synthetic contact matrix model
 synthetic_contact_NZ <- predict_contacts(
   model = contact_model,
   population = pop_dat,
-  age_breaks = c(seq(0, 85, by = 5), Inf)
+  age_breaks = c(seq(0, 95, by = 5), Inf)
 )
 
 # Make a matrix of the model output
@@ -52,13 +56,13 @@ message("max relative difference in ij vs ji contacts after detailed balance: ",
 # Plot detailed balance matrix
 autoplot(mat_DB)
 
-# Transpose so row are age_group_to (like Prem and existing code)
+# Transpose so columns are age_group_to 
 mat_DB_transposed = t(mat_DB)
 
 # Save as .csv
 write_csv(
   as.data.frame(mat_DB_transposed),
-  "nz_conmat.csv",
+  "../output/NZ_conmat.csv",
   col_names = FALSE
 )
 
