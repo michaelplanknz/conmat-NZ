@@ -10,6 +10,9 @@ library(dplyr)
 library(tibble)
 library(tidyr)
 
+# Specify the number of 5-year age bands to use - top age band will have lower limit of 5*(n_ages-1)
+n_ages = 18;
+
 polymod_contact_data <- get_polymod_contact_data(setting = "all")
 polymod_survey_data <- get_polymod_population()
 
@@ -33,8 +36,13 @@ pop_dat = age_population(data = pop_dat_nz, location_col = NULL, location = NULL
 synthetic_contact_NZ <- predict_contacts(
   model = contact_model,
   population = pop_dat,
-  age_breaks = c(seq(0, 95, by = 5), Inf)
+  age_breaks = c(seq(0, 5*(n_ages-1), by = 5), Inf)
 )
+
+# Combine top edge bands (if top age band is less than 95)
+N <- pop_dat$population[1:n_ages]
+N[n_ages] <- sum(pop_dat$population[n_ages:length(pop_dat$population)] )
+
 
 # Make a matrix of the model output
 mat = predictions_to_matrix(synthetic_contact_NZ)
@@ -43,12 +51,12 @@ mat = predictions_to_matrix(synthetic_contact_NZ)
 autoplot(mat)
 
 # Force detailed balanced condition
-mat_DB = 0.5 * (mat + (pop_dat$population %*% (1/t(pop_dat$population)) ) * t(mat) )
+mat_DB = 0.5 * (mat + (N %*% (1/t(N)) ) * t(mat) )
 
 
 # Calculate and display mismatch in detailed balance conditions for each matrix
-DBerr0 = (sweep(mat, 2, pop_dat$population, `*`) - sweep(t(mat), 1, pop_dat$population, `*`)  ) / sweep(mat, 2, pop_dat$population, `*`)
-DBerr1 = (sweep(mat_DB, 2, pop_dat$population, `*`) - sweep(t(mat_DB), 1, pop_dat$population, `*`)  ) / sweep(mat_DB, 2, pop_dat$population, `*`)
+DBerr0 = (sweep(mat, 2, N, `*`) - sweep(t(mat), 1, N, `*`)  ) / sweep(mat, 2, N, `*`)
+DBerr1 = (sweep(mat_DB, 2, N, `*`) - sweep(t(mat_DB), 1, N, `*`)  ) / sweep(mat_DB, 2, N, `*`)
 
 message("max relative difference in ij vs ji contacts:                        ", max(DBerr0))
 message("max relative difference in ij vs ji contacts after detailed balance: ", max(DBerr1))
@@ -56,10 +64,19 @@ message("max relative difference in ij vs ji contacts after detailed balance: ",
 # Plot detailed balance matrix
 autoplot(mat_DB)
 
+# Plot contact rate vs age
+conts_by_age = rowSums(t(mat_DB))
+df = data.frame(x = seq(0, 5*(n_ages-1), by = 5), y = conts_by_age)
+ggplot(df, aes(x = x, y = y)) +
+  geom_line() +
+  geom_point() +
+  labs(x = "Age (years)", y = "Mean daily contacts") + 
+  scale_y_continuous(limits = c(0, NA))
+
 # Transpose so columns are age_group_to 
 mat_DB_transposed = t(mat_DB)
 
-# Save as .csv
+# Save contact matrix as .csv
 write_csv(
   as.data.frame(mat_DB_transposed),
   "../output/NZ_conmat.csv",
