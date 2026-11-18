@@ -9,6 +9,7 @@ library(readr)
 library(dplyr)
 library(tibble)
 library(tidyr)
+library(ggplot)
 
 # Specify the number of 5-year age bands to use - top age band will have lower limit of 5*(n_ages-1)
 n_ages = 18;
