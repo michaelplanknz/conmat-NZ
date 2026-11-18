@@ -27,10 +27,10 @@ To generate a contact matrix:
 
 ## Results
 
-![Contact matrix](figures/contact_matrix.png)
+![Contact matrix](figures/contact_matrix.png) \
 *Figure 1. NZ contact matrix.*
 
-![Contact rates by age](figures/contacts_by_age.png)
+![Contact rates by age](figures/contacts_by_age.png) \
 *Figure 2. Total nNumber of daily contacts by age group.*
 
 
