@@ -22,12 +22,21 @@ The `ERP...` data file needs to be a .csv file in the following format.
 
 To generate a contact matrix:
 * Run the R script `code/makeContractMatrix.R`.
-* This saves the contact matrix in `output/NZ_conmat.csv`, which contains is a NZ contact matrix in 5-year age groups up to 95+. The entry in the ith row and jth column of this matrix is the estmiated number of daily contacts that someone in age group i has with people in age group j.
+* This saves the contact matrix in `output/NZ_conmat.csv`, which contains is a NZ contact matrix in 5-year age groups up to 85+. The entry in the ith row and jth column of this matrix is the estmiated number of daily contacts that someone in age group i has with people in age group j.
+
+
+## Results
+
+![Contact matrix](figures/contact_matrix.png)
+
+![Contact rates by age](figures/contacts_by_age.png)
+
+
 
 ## Notes
 
-This uses POLYMOD survey data (all contacts). In principle, it could be modified to use home, school, work and other contacts to generate separate contact matrices for these settings.
+* This uses POLYMOD survey data (all contacts). In principle, it could be modified to use home, school, work and other contacts to generate separate contact matrices for these settings.
+* The matrix is forced to satisfy the detailed balance condition in the usual way.
+* The code can be adapted to use a different top age band if required. However, the conmat output for age bands of 90 years and over tends to look weird, possibly because there is little data in the original POLYMOD survey for these age bands.
 
-The matrix is forced to satisfy the detailed balance condition in the usual way.
 
-The code can be adapted to use a different top age band if required. 
